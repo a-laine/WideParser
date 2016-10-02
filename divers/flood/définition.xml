@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+
+<!--
+	JavaScript Object Notation :
+	
+	+ les accolades {} définissent une classe d'association (map)
+	  où chaques paire est notée  "clée : valeur"
+	+ les crochets [] définissent un conteneur à valeur indicée
+	+ les , ou ; délimitent les éléments dans les types composés
+	  un retour à la ligne peut également jouer ce rôle
+	+ types primitifs (ou scalaires):
+		- booléen
+		- entier
+		- réel
+		- chaine de caractères, sont délimitées par '' ou "", "" gère les échappements
+		  une chaine de 1 caractère est considéré comme un caractère plutot
+		  que comme une chaine
+	+ toute variable peut être renseignée par un nom lorsqu'elle est déclaré dans la racine
+	  elle est alors suivie par un signe = ou : pour les types primitifs et par leurs caractères
+	  spéciaux pour les types composés précédés ou non de = ou :
+	+ un nom de variable ou la clé d'une classe d'association peut contenir des caractères
+	  spéciaux en l'écrivant comme une chaine de caractère, donc avec '' ou ""
+	+ une variable nomée peut être référencé plus tard dans le code en suffixant son nom par @
+-->
+
+
+
+
+<!--Définition d' une classe d'association globale-->
+<MyClass 
+	id="MyObject"
+	att1="true"
+	att2="150">
+	<att4>
+		<n1>10</n1>
+		<n2>25</n2>
+		<n3>6</n3>
+	</att4>
+	<att5 1="a" 2="b" 3="c" />
+</MyClass>

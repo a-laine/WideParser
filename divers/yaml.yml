@@ -1,0 +1,72 @@
+# a implémenter:
+#   ancres et alias
+#   type explicite
+
+tokens:
+    tCOMMENTS: " #[^\n]*"
+    tPAIR_DEL: ": "
+    #   (JSON): ":"
+    #   (AUTRE): "="
+    tMAP_SPEC: "? "
+    tLIST_SPEC: "- "
+    tEL: "\n"
+    tINDENT: "[ \t]*"
+    
+    tMAP_BEGIN: "{"
+    tMAP_END: "}"
+    tLIST_BEGIN: "["
+    tLIST_END: "]"
+    tDELIMITER: ","
+    
+    tsNULL: "null" | "NULL" | "Null" | "~"
+    tsTRUE: "true" | "True" | "TRUE"
+    tsFALSE: "false" | "False" | "FALSE"
+    tsINT: "[+-]?[0-9]+"
+    tsINTO: "0o[0-7]+"
+    tsINTX: "0x[0-9A-Fa-f]+"
+    tsINTB: "0b[01]+"
+    tsFLOAT_NB: "[+-]?((\.[0-9]+)|([0-9]+(\.[0-9]*)?))([eE][+-]?[0-9]+)?"
+    tsFLOAT_INF: "[+-]?\.(inf)|(Inf)|(INF)"
+    tsFLOAT_NAN: "[+-]?\.(nan)|(NaN)|(NAN)"
+    tsESTRING_DQ: "\"[^"]\""
+    tsESTRING_SQ: "'[^']'"
+    
+
+syntax:
+    DOCUMENT: YAML_VALUE
+    YAML_VALUE: tEL YAML_MAP | YAML_MAP
+         | tEL YAML_LIST | YAML_LIST
+         | JSON_VALUE
+         | YAML_SCALAR
+    JSON_VALUE: JSON_MAP | JSON_LIST | JSON_SCALAR
+    
+    YAML_MAP: YAML_PAIR tEL YAML_MAP | YAML_PAIR
+    YAML_PAIR: YAML_SCALAR tPAIR_DEL YAML_VALUE
+             | tMAP_SPEC YAML_VALUE tEL tMAP_DEL YAML_VALUE
+    JSON_MAP: tMAP_BEGIN JSON_MAP_CONTENT tMAP_END
+            | tMAP_BEGIN tMAP_END
+    JSON_MAP_CONTENT: JSON_PAIR tDELIMITER JSON_MAP_CONTENT | JSON_PAIR
+    JSON_PAIR: JSON_SCALAR tPAIR_DEL JSON_VALUE
+    
+    YAML_LIST: YAML_ITEM tEL YAML_LIST | YAML_ITEM
+    YAML_ITEM: tLIST_SPEC YAML_VALUE
+    JSON_LIST: tLIST_BEGIN JSON_LIST_CONTENT tLIST_END
+             | tLIST_BEGIN tLIST_END
+    JSON_LIST_CONTENT: JSON_VALUE tDELIMITER JSON_LIST_CONTENT | JSON_VALUE
+    
+    YAML_SCALAR: JSON_SCALAR | ML_SCALAR
+    JSON_SCALAR: tsNULL | tsTRUE | tsFALSE
+          | tsINT | tsINTX | tsINTO | tsINTB
+          | tsFLOAT_NB | tsFLOAT_INF | tsFLOAT_NAN
+          | STRING | ;
+          
+    INDENT: {}
+    UNINDENT: {}
+    # indentation illogique
+    ML_SCALAR: {}
+    # indentation
+    # ML_SCALAR_LINE
+    STRING: {}
+    # sequence de ESTRING?
+    # espaces au milieu
+    # char non acceptés...

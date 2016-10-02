@@ -1,0 +1,13 @@
+bla2 = "bla x";
+
+class:
+{
+	bla1 : "bla xx";
+	bla2 : "bla xxx";
+	class :{
+		bla1 : "bla xxxx";
+	};
+	"bla3":"bla3";
+}
+
+tab: ["1","2","3","4"];

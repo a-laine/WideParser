@@ -1,0 +1,33 @@
+# prise en compte des commentaires?
+
+tokens:
+    tPAIR_DEL: ": "
+    tMAP_BEGIN: "{"
+    tMAP_END: "}"
+    tLIST_BEGIN: "["
+    tLIST_END: "]"
+    tDELIMITER: ","
+
+    tsNULL: "null"
+    tsTRUE: "true"
+    tsFALSE: "false"
+    tsFLOAT_NB: "[+-]?((\.[0-9]+)|([0-9]+(\.[0-9]*)?))([eE][+-]?[0-9]+)?"
+    tsESTRING_DQ: "\"[^"]\""
+
+grammar:
+    DOCUMENT: JSON_MAP
+    JSON_VALUE: JSON_MAP | JSON_LIST | JSON_SCALAR
+    
+    JSON_MAP: tMAP_BEGIN JSON_MAP_CONTENT tMAP_END
+            | tMAP_BEGIN tMAP_END
+    JSON_MAP_CONTENT: JSON_PAIR tDELIMITER JSON_MAP_CONTENT | JSON_PAIR
+    JSON_PAIR: tsESTRING_DQ tPAIR_DEL JSON_VALUE
+    
+    JSON_LIST: tLIST_BEGIN JSON_LIST_CONTENT tLIST_END
+             | tLIST_BEGIN tLIST_END
+    JSON_LIST_CONTENT: JSON_VALUE tDELIMITER JSON_LIST_CONTENT | JSON_VALUE
+    
+    JSON_SCALAR: tsNULL | tsTRUE | tsFALSE
+               | tsFLOAT_NB | tsESTRING_DQ
+
+

@@ -1,6 +1,6 @@
 #include <iostream>
-#include "Reader.h"
-#include "Writer.h"
+#include "Reader.hpp"
+#include "Writer.hpp"
 #include <stdexcept>
 
 using namespace std;

@@ -1,7 +1,7 @@
 #ifndef WRITER_H
 #define WRITER_H
 
-#include "Variant.h"
+#include "Variant.hpp"
 #include <ostream>
 #include <string>
 

@@ -1,4 +1,4 @@
-#include "Writer.h"
+#include "Writer.hpp"
 #include <stdexcept>
 #include <algorithm>
 #include <fstream>

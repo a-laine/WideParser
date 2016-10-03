@@ -150,7 +150,7 @@ class Variant
         /*! \brief x
          *
          */
-        Variant(const int64_t var);
+        Variant(const long long var);
 
         /*! \brief x
          *
@@ -226,7 +226,7 @@ class Variant
         /*! \brief x
          *
          */
-        int64_t toLong() const;
+        long long toLong() const;
 
         /*! \brief x
          *
@@ -325,7 +325,7 @@ class Variant
         /*! \brief x
          *
          */
-        Variant& operator= (const int64_t var);
+        Variant& operator= (const long long var);
 
         /*! \brief x
          *
@@ -385,7 +385,7 @@ class Variant
         {
             bool Bool;
             int Int;
-            int64_t Long;
+            long long Long;
             float Float;
             double Double;
             std::string* String;

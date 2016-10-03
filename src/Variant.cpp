@@ -1,4 +1,4 @@
-#include "Variant.h"
+#include "Variant.hpp"
 #include <stdexcept>
 
 //********************************************----------------------------*********************************************//
@@ -49,7 +49,7 @@ Variant::Variant(const char var) : type(Variant::CHAR) {
 Variant::Variant(const int var) : type(Variant::INT) {
     value.Int=var; }
 
-Variant::Variant(const int64_t var) : type(Variant::LONG) {
+Variant::Variant(const long long var) : type(Variant::LONG) {
     value.Long=var; }
 
 Variant::Variant(const float var) : type(Variant::FLOAT) {
@@ -98,7 +98,7 @@ bool Variant::toBool() const {
 char Variant::toChar() const {
     return toInt(); }
 
-int64_t Variant::toLong() const {
+long long Variant::toLong() const {
     return value.Long; }
 
 int Variant::toInt() const {
@@ -256,7 +256,7 @@ Variant& Variant::operator= (const int var)
     return *this;
 }
 
-Variant& Variant::operator= (const int64_t var)
+Variant& Variant::operator= (const long long var)
 {
     setToNull();
     type=Variant::LONG; value.Long=var;

@@ -1,7 +1,7 @@
 #ifndef READER_H
 #define READER_H
 
-#include "Variant.h"
+#include "Variant.hpp"
 #include <istream>
 #include <string>
 

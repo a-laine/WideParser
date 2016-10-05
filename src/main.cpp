@@ -12,7 +12,7 @@ int main()
     std::cout << "---------------------" << std::endl;
     try{
         Variant v;
-        Reader::parseFile(v,"fic.txt");
+        Reader::parseFile(v,"tests/fic.txt");
         std::cout << "bla2 = " << v["bla2"].toString() << std::endl;
         std::cout << "class.bla1 = " << v["class"]["bla1"].toString() << std::endl;
         std::cout << "class.bla2 = " << v["class"]["bla2"].toString() << std::endl;
@@ -39,7 +39,7 @@ int main()
     std::cout << "---------------------" << std::endl;
     try{
         Variant v;
-        Reader::parseFile(v,"fic2.txt");
+        Reader::parseFile(v,"tests/fic2.txt");
         std::cout << "num1 = " << v["num1"].toInt() << std::endl;
         std::cout << "num2 = " << v["num2"].toInt() << std::endl;
         std::cout << "num3 = " << v["num3"].toLong() << std::endl;

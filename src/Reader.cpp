@@ -11,7 +11,7 @@ void Reader::parseFile(Variant &result, std::string file)
 {
     std::ifstream strm(file.c_str());
     if(!strm.is_open())
-        throw std::invalid_argument("Reader::parseFile : Cannot opening file");
+		throw std::invalid_argument("Reader::parseFile : Cannot open file");
     Reader reader(&strm);
     reader.parse(result);
 }
@@ -179,6 +179,17 @@ bool Reader::readValue(Variant* exp)
     std::string str;
     bool isString = false;
 
+	if(charBuf == '[')
+	{
+		readArray(exp);
+		return true;
+	}
+	if(charBuf == '{')
+	{
+		readMap(exp);
+		return true;
+	}
+
     for( ;charBuf!=',' && charBuf!=';' &&
           charBuf!='}' && charBuf!=']' &&
           !ifs->eof(); nextChar())
@@ -191,13 +202,7 @@ bool Reader::readValue(Variant* exp)
             case '\'':
                 str.append(readString(charBuf,charBuf=='\"'));
                 isString = true;
-                break;
-            case '{':
-                readMap(exp);
-                return true;
-            case '[':
-                readArray(exp);
-                return true;
+				break;
             default:
                 if(charBuf!=' ')
                     nbErrors++;
@@ -300,10 +305,10 @@ std::string Reader::readString(char endChar, bool escape) const
                         }
                     }
                     goto l_convert;
-                case 'N':   hex = "0085";
-                case '_':   hex = "00a0";
-                case 'L':   hex = "2028";
-                case 'P':   hex = "2029";
+				case 'N':   hex = "0085"; goto l_convert;
+				case '_':   hex = "00a0"; goto l_convert;
+				case 'L':   hex = "2028"; goto l_convert;
+				case 'P':   hex = "2029"; goto l_convert;
                 l_convert:
                     hex = utf8Convert(static_cast<unsigned int>(strtoul(hex.c_str(),0,16)));
                     break;
@@ -324,11 +329,10 @@ void sconvert(Variant* var, std::string& value, int base=10, bool isFloat=false)
     if(isFloat)
     {
         double num = atof(value.c_str());
-        /*if(num>=std::numeric_limits<float>::min() && num<=std::numeric_limits<float>::max())
+		if(num>=std::numeric_limits<float>::min() && num<=std::numeric_limits<float>::max())
             *var = static_cast<float>(num);
         else
-            *var = num;*/
-        *var = num;
+			*var = num;
     }
     else
     {

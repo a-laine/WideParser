@@ -127,7 +127,6 @@ Variant& Variant::operator[] (const size_t key)
 
 const Variant& Variant::operator[] (const size_t key) const
 {
-    Variant v();
     if(type!=Variant::SEQUENCE)
         throw std::logic_error("Variant::operator[](size_t) : wrong type");
     return value.Array->at(key);
@@ -135,7 +134,6 @@ const Variant& Variant::operator[] (const size_t key) const
 
 Variant& Variant::operator[] (const std::string key)
 {
-    Variant v();
     if(type!=Variant::MAP)
         throw std::logic_error("Variant::operator[](std::string) : wrong type");
     return value.Map->at(key);
@@ -143,7 +141,6 @@ Variant& Variant::operator[] (const std::string key)
 
 const Variant& Variant::operator[] (const std::string key) const
 {
-    Variant v();
     if(type!=Variant::MAP)
         throw std::logic_error("Variant::operator[](std::string) : wrong type");
     return value.Map->at(key);

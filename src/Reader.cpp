@@ -210,12 +210,12 @@ bool Reader::readValue(Variant* exp)
         readNumber(exp,str);
     else
     {
-        if(str.substr(0,4) == "true")
-            *exp = true;
-        else if(str.substr(0,5) == "false")
-            *exp = false;
-        else if(str.substr(0,4) == "null")
+        if(str.empty() || str == "null")
             exp->setToNull();
+        else if(str == "true")
+            *exp = true;
+        else if(str == "false")
+            *exp = false;
         else
             *exp = str;
     }

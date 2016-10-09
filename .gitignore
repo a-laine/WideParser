@@ -1,4 +1,6 @@
 bin
+Debug
+Release
 obj
 *.log
 
@@ -8,6 +10,7 @@ obj
 CMakeCache.txt
 CMakeFiles
 CMakeScripts
+*.user
 Makefile
 cmake_install.cmake
 install_manifest.txt

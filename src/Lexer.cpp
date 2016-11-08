@@ -51,7 +51,7 @@ Token Lexer::next(Context context)
     		break;
     	case ':':
     		if(stream.peek() == ' ')
-    			token = MAP_VALUE_BEGIN;
+    			token = MAP_DELIMITER;
     		break;
     	default:
     		token = ERROR;
@@ -61,12 +61,12 @@ Token Lexer::next(Context context)
 	return token;
 }
 
-Token Lexer::token()
+Token Lexer::getToken()
 {
 	return token;
 }
 
-std::string Lexer::value()
+std::string Lexer::getValue()
 {
 	return std::string(1,charBuf);
 }

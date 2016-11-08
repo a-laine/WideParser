@@ -28,7 +28,7 @@ int main()
         std::cout << "Exception lancee:" << std::endl;
         std::cout << e.what() << std::endl;
     }
-    std::cout << "---------------------" << std::flush;
+    std::cout << "---------------------" << std::endl;
     return 0;
 }*/
 
@@ -65,7 +65,7 @@ int main()
         std::cout << "Exception lancee:" << std::endl;
         std::cout << e.what() << std::endl;
     }
-    std::cout << "---------------------" << std::flush;
+    std::cout << "---------------------" << std::endl;
     return 0;
 }*/
 
@@ -92,14 +92,14 @@ int main()
         v["tab"].insert(3);
         v["tab"].insert(4);
         v["tab"].insert("fin");
-        std::cout << Writer::writeInString(v) << std::flush;
+        std::cout << Writer::writeInString(v) << std::endl;
     } catch(std::exception &e)
     {
         std::cout << "---------------------" << std::endl;
         std::cout << "Exception lancee:" << std::endl;
         std::cout << e.what() << std::endl;
     }
-    std::cout << "---------------------" << std::flush;
+    std::cout << "---------------------" << std::endl;
     return 0;
 }
 

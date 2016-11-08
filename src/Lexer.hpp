@@ -9,9 +9,14 @@ enum Token {
 	ERROR,
 	END_STREAM,
 	NEW_LINE,
+	MAP_BLOCK_BEGIN,
+	MAP_BLOCK_END,
 	MAP_FLOW_BEGIN,
-	SEQ_FLOW_BEGIN,
 	MAP_FLOW_END,
+	MAP_DELIMITER,
+	SEQ_BLOCK_BEGIN,
+	SEQ_BLOCK_END,
+	SEQ_FLOW_BEGIN,
 	SEQ_FLOW_END
 };
 
@@ -29,14 +34,14 @@ class Lexer
 		Lexer(std::istream& input);
 
 		Token next(Context context);
-		Token token();
-		std::string value();
+		Token getToken();
+		std::string getValue();
 
 	private:
 		std::istream& stream;
 		Token token;
 		char charBuf;
-		std:string value;
+		std::string value;
 
 		bool skipComments();
 		std::string readString(char endChar, bool escape);

@@ -1,72 +1,71 @@
-# a implémenter:
-#   ancres et alias
-#   type explicite
+predefined char:
+  c_uri: ns-uri-char
+  c_tag: ns-tag-char # ns-uri-char - "!,[]{}"
+  c_anchor: ns-anchor-char # all - ws - ",[]{}"
 
 tokens:
-    tCOMMENTS: " #[^\n]*"
-    tPAIR_DEL: ": "
-    #   (JSON): ":"
-    #   (AUTRE): "="
-    tMAP_SPEC: "? "
-    tLIST_SPEC: "- "
-    tEL: "\n"
-    tINDENT: "[ \t]*"
-    
-    tMAP_BEGIN: "{"
-    tMAP_END: "}"
-    tLIST_BEGIN: "["
-    tLIST_END: "]"
-    tDELIMITER: ","
-    
-    tsNULL: "null" | "NULL" | "Null" | "~"
-    tsTRUE: "true" | "True" | "TRUE"
-    tsFALSE: "false" | "False" | "FALSE"
-    tsINT: "[+-]?[0-9]+"
-    tsINTO: "0o[0-7]+"
-    tsINTX: "0x[0-9A-Fa-f]+"
-    tsINTB: "0b[01]+"
-    tsFLOAT_NB: "[+-]?((\.[0-9]+)|([0-9]+(\.[0-9]*)?))([eE][+-]?[0-9]+)?"
-    tsFLOAT_INF: "[+-]?\.(inf)|(Inf)|(INF)"
-    tsFLOAT_NAN: "[+-]?\.(nan)|(NaN)|(NAN)"
-    tsESTRING_DQ: "\"[^"]\""
-    tsESTRING_SQ: "'[^']'"
-    
+  t_comment_caracter: "#" # ws before
+  t_map_key_delimiter: ":" # ws after
+  t_map_element_indicator: "?" # ws after
+  t_seq_element_indicator: "-" # ws after
+  t_flow_map_begin: "{"
+  t_flow_map_end: "}"
+  t_flow_seq_begin: "["
+  t_flow_seq_end: "]"
+  t_flow_delimiter: ","
+  t_dq_scalar: "\"{estring}\""
+  t_sq_scalar: "'{string}'"
+  t_anchor: "&{c_anchor}*"
+  t_alias: "*{c_anchor}*"
+  t_tag: "!<{c_uri}*>" | "!{c_tag}*?" | "!([0-9]|[a-zA-Z]|-)*!{c_tag}*"
+  t_new_line: "\r|\n|\r\n|{EOF}"  # LR CR EOF
+  t_empty_value: ""
+  --ignored--: " |\t" # except for indentation or scalar content
+  --comments--: "#[^{t_new_line}]*{t_new_line}" # ws before
 
-syntax:
-    DOCUMENT: YAML_VALUE
-    YAML_VALUE: tEL YAML_MAP | YAML_MAP
-         | tEL YAML_LIST | YAML_LIST
-         | JSON_VALUE
-         | YAML_SCALAR
-    JSON_VALUE: JSON_MAP | JSON_LIST | JSON_SCALAR
-    
-    YAML_MAP: YAML_PAIR tEL YAML_MAP | YAML_PAIR
-    YAML_PAIR: YAML_SCALAR tPAIR_DEL YAML_VALUE
-             | tMAP_SPEC YAML_VALUE tEL tMAP_DEL YAML_VALUE
-    JSON_MAP: tMAP_BEGIN JSON_MAP_CONTENT tMAP_END
-            | tMAP_BEGIN tMAP_END
-    JSON_MAP_CONTENT: JSON_PAIR tDELIMITER JSON_MAP_CONTENT | JSON_PAIR
-    JSON_PAIR: JSON_SCALAR tPAIR_DEL JSON_VALUE
-    
-    YAML_LIST: YAML_ITEM tEL YAML_LIST | YAML_ITEM
-    YAML_ITEM: tLIST_SPEC YAML_VALUE
-    JSON_LIST: tLIST_BEGIN JSON_LIST_CONTENT tLIST_END
-             | tLIST_BEGIN tLIST_END
-    JSON_LIST_CONTENT: JSON_VALUE tDELIMITER JSON_LIST_CONTENT | JSON_VALUE
-    
-    YAML_SCALAR: JSON_SCALAR | ML_SCALAR
-    JSON_SCALAR: tsNULL | tsTRUE | tsFALSE
-          | tsINT | tsINTX | tsINTO | tsINTB
-          | tsFLOAT_NB | tsFLOAT_INF | tsFLOAT_NAN
-          | STRING | ;
-          
-    INDENT: {}
-    UNINDENT: {}
-    # indentation illogique
-    ML_SCALAR: {}
-    # indentation
-    # ML_SCALAR_LINE
-    STRING: {}
-    # sequence de ESTRING?
-    # espaces au milieu
-    # char non acceptés...
+type tokens:
+  tt_null: "null" | "Null" | "NULL" | "~"
+  tt_true: "true" | "True" | "TRUE"
+  tt_false: "false" | "False" | "FALSE"
+  tt_int: "[+-]?[0-9]+"
+  tt_int_oct: "0o[0-7]+"
+  tt_int_hex: "0x[0-9A-Fa-f]+"
+  tt_int_bin: "0b[01]+"
+  tt_float: "[+-]?((\.[0-9]+)|([0-9]+(\.[0-9]*)?))([eE][+-]?[0-9]+)?"
+  tt_inf: "[+-]?\.(inf)|(Inf)|(INF)"
+  tt_nan: "[+-]?\.(nan)|(NaN)|(NAN)"
+  
+
+
+
+
+generic syntax:
+  DOCUMENT: t_indent? NODE
+  NODE: (BLOCK_MAP | BLOCK_SEQ | BLOCK_SCALAR) t_new_line t_regular_indent
+  NODE: (FLOW_MAP | FLOW_SEQ | FLOW_SCALAR) t_new_line t_regular_indent
+  BLOCK_MAP: BLOCK_MAP_ENTRY BLOCK_MAP?
+  BLOCK_SEQ: BLOCK_SEQ_ENTRY BLOCK_SEQ?
+  BLOCK_MAP_ENTRY: FLOW_SCALAR t_map_key_delimiter t_indent NODE t_unindent # vérifier FLOW_SCALAR
+  BLOCK_MAP_ENTRY: t_map_element_indicator t_indent NODE t_unindent t_map_key_delimiter t_indent NODE t_unindent
+  BLOCK_SEQ_ENTRY: t_seq_element_indicator t_indent NODE t_unindent
+  BLOCK_SCALAR: ...
+  FLOW_SCALAR: t_empty_value | t_alias | t_dq_scalar | t_sq_scalar | PLAIN_SCALAR
+  PLAIN_SCALAR: ... # t_content_text t_flow_folded_lines? 
+  FLOW_MAP: t_flow_map_begin FLOW_LINE_BREAK? FLOW_MAP_CONTENT? t_flow_map_end
+  FLOW_MAP_CONTENT: FLOW_MAP_PAIR FLOW_LINE_BREAK? ( t_flow_delimiter FLOW_LINE_BREAK? FLOW_MAP_CONTENT? )?
+  FLOW_SEQ: t_flow_seq_begin FLOW_LINE_BREAK? FLOW_SEQ_CONTENT? t_flow_seq_end
+  FLOW_SEQ_CONTENT: (FLOW_PAIR | FLOW_MAP | FLOW_SEQ | FLOW_SCALAR) FLOW_LINE_BREAK? ( t_flow_delimiter FLOW_LINE_BREAK? FLOW_SEQ_CONTENT? )?
+  FLOW_MAP_PAIR: ...
+  FLOW_PAIR: ...
+  FLOW_LINE_BREAK: ...
+
+
+
+
+
+other syntax:
+  INDENT: "( |\t)*"
+  NODE_PROPERTIES: t_anchor | t_tag | t_anchor t_tag | t_tag t_anchor #TODO
+  DIRECTIVES: ...
+
+

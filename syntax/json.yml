@@ -1,33 +1,29 @@
-# prise en compte des commentaires?
+# considere comments
 
 tokens:
-    tPAIR_DEL: ": "
-    tMAP_BEGIN: "{"
-    tMAP_END: "}"
-    tLIST_BEGIN: "["
-    tLIST_END: "]"
-    tDELIMITER: ","
+    t_pair_delimiter: ": "
+    t_map_begin: "{"
+    t_map_end: "}"
+    t_list_begin: "["
+    t_list_end: "]"
+    t_delimiter: ","
+    --ignore--: " |\t|\r|\n"
 
-    tsNULL: "null"
-    tsTRUE: "true"
-    tsFALSE: "false"
-    tsFLOAT_NB: "[+-]?((\.[0-9]+)|([0-9]+(\.[0-9]*)?))([eE][+-]?[0-9]+)?"
-    tsESTRING_DQ: "\"[^"]\""
+scalar tokens:
+    ts_null: "null"
+    ts_true: "true"
+    ts_false: "false"
+    ts_float: "[+-]?((\.[0-9]+)|([0-9]+(\.[0-9]*)?))([eE][+-]?[0-9]+)?"
+    ts_string: "\"[^"]\""
 
 grammar:
-    DOCUMENT: JSON_MAP
-    JSON_VALUE: JSON_MAP | JSON_LIST | JSON_SCALAR
-    
-    JSON_MAP: tMAP_BEGIN JSON_MAP_CONTENT tMAP_END
-            | tMAP_BEGIN tMAP_END
-    JSON_MAP_CONTENT: JSON_PAIR tDELIMITER JSON_MAP_CONTENT | JSON_PAIR
-    JSON_PAIR: tsESTRING_DQ tPAIR_DEL JSON_VALUE
-    
-    JSON_LIST: tLIST_BEGIN JSON_LIST_CONTENT tLIST_END
-             | tLIST_BEGIN tLIST_END
-    JSON_LIST_CONTENT: JSON_VALUE tDELIMITER JSON_LIST_CONTENT | JSON_VALUE
-    
-    JSON_SCALAR: tsNULL | tsTRUE | tsFALSE
-               | tsFLOAT_NB | tsESTRING_DQ
+    DOCUMENT: VALUE
+    VALUE: MAP | LIST | SCALAR
+    MAP: t_map_begin MAP_CONTENT? t_map_end
+    MAP_CONTENT: PAIR ( t_delimiter MAP_CONTENT )?
+    PAIR: ts_string t_pair_delimiter VALUE
+    LIST: t_list_begin LIST_CONTENT? t_list_end
+    LIST_CONTENT: VALUE ( t_delimiter LIST_CONTENT )?
+    SCALAR: ts_null | ts_true | ts_false | ts_float | ts_string
 
 

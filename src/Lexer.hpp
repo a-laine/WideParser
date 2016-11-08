@@ -19,7 +19,8 @@ enum Context {
 	FLOW_MAP,
 	FLOW_SEQ,
 	BLOCK_MAP,
-	BLOCK_SEQ
+	BLOCK_SEQ,
+	FLOW_SCALAR
 };
 
 class Lexer

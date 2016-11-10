@@ -7,7 +7,7 @@ using namespace std;
 
 /*
 // test arborescence
-int main()
+int main(int argc, char** argv)
 {
     std::cout << "---------------------" << std::endl;
     try{
@@ -34,7 +34,7 @@ int main()
 
 /*
 // test types
-int main()
+int main(int argc, char** argv)
 {
     std::cout << "---------------------" << std::endl;
     try{
@@ -71,7 +71,7 @@ int main()
 
 
 // test Writer
-int main()
+int main(int argc, char** argv)
 {
     std::cout << "---------------------" << std::endl;
     try{

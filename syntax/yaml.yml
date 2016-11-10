@@ -13,6 +13,8 @@ tokens:
   t_flow_seq_begin: "["
   t_flow_seq_end: "]"
   t_flow_delimiter: ","
+  t_block_scalar_litteral: "|"
+  t_block_scalar_folded: ">"
   t_dq_scalar: "\"{estring}\""
   t_sq_scalar: "'{string}'"
   t_anchor: "&{c_anchor}*"
@@ -21,7 +23,7 @@ tokens:
   t_new_line: "\r|\n|\r\n|{EOF}"  # LR CR EOF
   t_empty_value: ""
   --ignored--: " |\t" # except for indentation or scalar content
-  --comments--: "#[^{t_new_line}]*{t_new_line}" # ws before
+  --comments--: "#[^{t_new_line}]*{t_new_line}" # ws before, comments are not allowed in scalars
 
 type tokens:
   tt_null: "null" | "Null" | "NULL" | "~"
@@ -48,9 +50,14 @@ generic syntax:
   BLOCK_MAP_ENTRY: FLOW_SCALAR t_map_key_delimiter t_indent NODE t_unindent # vérifier FLOW_SCALAR
   BLOCK_MAP_ENTRY: t_map_element_indicator t_indent NODE t_unindent t_map_key_delimiter t_indent NODE t_unindent
   BLOCK_SEQ_ENTRY: t_seq_element_indicator t_indent NODE t_unindent
-  BLOCK_SCALAR: ...
-  FLOW_SCALAR: t_empty_value | t_alias | t_dq_scalar | t_sq_scalar | PLAIN_SCALAR
-  PLAIN_SCALAR: ... # t_content_text t_flow_folded_lines? 
+  BLOCK_SCALAR: t_block_scalar_litteral BLOCK_SCALAR_HEADERS? t_new_line BLOCK_SCALAR_LITTERAL t_block_scalar_chomping
+  BLOCK_SCALAR: t_block_scalar_folded BLOCK_SCALAR_HEADERS? t_new_line BLOCK_SCALAR_FOLDED t_block_scalar_chomping
+  BLOCK_SCALAR_LITTERAL: t_litteral_empty_lines? t_content_text BLOCK_SCALAR_LITTERAL?
+  BLOCK_SCALAR_FOLDED: ...
+  FLOW_SCALAR: t_empty_value | t_alias | (t_double_quote DQ_SCALAR t_double_quote) | (t_single_quote SQ_SCALAR t_single_quote) | PLAIN_SCALAR
+  DQ_SCALAR: t_dq_content t_flow_folded_lines? DQ_SCALAR?
+  SQ_SCALAR: t_sq_content t_flow_folded_lines? SQ_SCALAR?
+  PLAIN_SCALAR: t_plain_content t_flow_folded_lines? PLAIN_SCALAR?
   FLOW_MAP: t_flow_map_begin FLOW_LINE_BREAK? FLOW_MAP_CONTENT? t_flow_map_end
   FLOW_MAP_CONTENT: FLOW_MAP_PAIR FLOW_LINE_BREAK? ( t_flow_delimiter FLOW_LINE_BREAK? FLOW_MAP_CONTENT? )?
   FLOW_SEQ: t_flow_seq_begin FLOW_LINE_BREAK? FLOW_SEQ_CONTENT? t_flow_seq_end
@@ -66,6 +73,7 @@ generic syntax:
 other syntax:
   INDENT: "( |\t)*"
   NODE_PROPERTIES: t_anchor | t_tag | t_anchor t_tag | t_tag t_anchor #TODO
+  BLOCK_SCALAR_HEADERS: ...
   DIRECTIVES: ...
 
 

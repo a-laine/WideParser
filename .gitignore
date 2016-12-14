@@ -3,6 +3,7 @@ Debug
 Release
 obj
 *.log
+YAML_site*
 
 # CMake
 # =========================

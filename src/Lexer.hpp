@@ -4,28 +4,23 @@
 #include <istream>
 #include <string>
 
+
 enum Token {
-	NO_TOKEN,
+	NEW_LINE,
 	ERROR,
 	END_STREAM,
-	NEW_LINE,
-	MAP_BLOCK_BEGIN,
-	MAP_BLOCK_END,
-	MAP_FLOW_BEGIN,
-	MAP_FLOW_END,
-	MAP_DELIMITER,
-	SEQ_BLOCK_BEGIN,
-	SEQ_BLOCK_END,
-	SEQ_FLOW_BEGIN,
-	SEQ_FLOW_END
-};
-
-enum Context {
-	FLOW_MAP,
-	FLOW_SEQ,
-	BLOCK_MAP,
-	BLOCK_SEQ,
-	FLOW_SCALAR
+	BLOCK_MAP_ENTRY,
+	BLOCK_SEQ_ENTRY,
+	MAP_KEY_DELIMITER,
+	FLOW_MAP_BEGIN,
+	FLOW_MAP_END,
+	FLOW_SEQ_BEGIN,
+	FLOW_SEQ_END,
+	FLOW_DELIMITER,
+	SCALAR,
+	ALIAS,
+	ANCHOR,
+	TAG
 };
 
 class Lexer
@@ -33,18 +28,24 @@ class Lexer
 	public:
 		Lexer(std::istream& input);
 
-		Token next(Context context);
+		Token next();
 		Token getToken();
 		std::string getValue();
+		int getIndentation();
 
 	private:
 		std::istream& stream;
-		Token token;
-		char charBuf;
 		std::string value;
+		int column;
+		char charBuf;
 
-		bool skipComments();
-		std::string readString(char endChar, bool escape);
+		char getChar();
+		char skipComments(bool multiline = false);
+		std::string readBlockScalar();
+		std::string readQuotedString(char endChar, bool escape);
+		std::string readAnchorName();
+		std::string readPlainScalar();
+		std::string readTagName();
 };
 
 

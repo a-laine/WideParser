@@ -6,59 +6,99 @@
 
 
 
+
 Lexer::Lexer(std::istream& input) :
-	stream(input)
+	stream(input),
+    column(0)
 {}
 
-Token Lexer::next(Context context)
+char Lexer::getChar()
 {
-	token = NO_TOKEN;
-	value.erase();
-
-    do {
-    	charBuf = stream.get();
-    	if(stream.eof())
-	    {
-	        token = END_STREAM;
-	        return token;
-	    }
-    } while(skipComments());
-
-    if(token != NO_TOKEN)
-    	return token;
-
-    switch(charBuf)
+    char c;
+    do
     {
-    	case '{':
-    		token = MAP_FLOW_BEGIN;
-    		break;
-    	case '[':
-    		token = SEQ_FLOW_BEGIN;
-    		break;
-    	case '}':
-    		token = MAP_FLOW_END;
-    		break;
-    	case ']':
-    		token = SEQ_FLOW_END;
-    		break;
-    	case '?':
-    		if(stream.peek() == ' ')
-    			token = MAP_BLOCK_BEGIN;
-    		break;
-    	case '-':
-    		if(stream.peek() == ' ')
-    			token = SEQ_BLOCK_BEGIN;
-    		break;
-    	case ':':
-    		if(stream.peek() == ' ')
-    			token = MAP_DELIMITER;
-    		break;
-    	default:
-    		token = ERROR;
-    		break;
-    }
+        c = stream.get();
+        if(c == '\r') { // OSX & Windows EOL
+            c = '\n';
+            if(stream.peek() == '\n')
+                stream.get();
+        }
+        else if(c == ' ' || c == '\t') {
+            c = ' ';
+            charBuf = c;
+        }
+        if(c == '\n')
+            column = 0;
+        else if((c & 0xC0) != 0x80) // unicode
+            column++;
+    } while(c == ' ');
+    return c;
+}
 
-	return token;
+Token Lexer::next()
+{
+    char c;
+_begin:
+    if(stream.eof())
+        return END_STREAM;
+    c = getChar();
+
+    // comments
+    if(c == '#' && (charBuf==' ' || column==0))
+        return skipComments(), NEW_LINE;
+    if(c == '/' && stream.peek() == '/')
+        return skipComments(), NEW_LINE;
+    if(c == '/' && stream.peek() == '*') {
+        skipComments(true);
+        goto _begin;
+    }
+    
+    charBuf = c;
+
+    // new line
+    if(c == '\n' || c == '\r')
+        return NEW_LINE;
+
+    // block indicators
+    if(c == '?') // TODO  next = blank
+        return BLOCK_MAP_ENTRY;
+    if(c == '-') // TODO  next = blank
+        return BLOCK_SEQ_ENTRY;
+    if(c == ':') // TODO  next = blank
+        return MAP_KEY_DELIMITER;
+    
+    // flow indicators
+    if(c == '{')
+        return FLOW_MAP_BEGIN;
+    if(c == '}')
+        return FLOW_MAP_END;
+    if(c == '[')
+        return FLOW_SEQ_BEGIN;
+    if(c == ']')
+        return FLOW_SEQ_END;
+    if(c == ',')
+        return FLOW_DELIMITER;
+    
+    // scalars
+    if(c == '|')
+        return value = readBlockScalar(), SCALAR;
+    if(c == '>')
+        return value = readBlockScalar(), SCALAR;
+    if(c == '"')
+        return value = readQuotedString(c, true), SCALAR;
+    if(c == '\'')
+        return value = readQuotedString(c, false), SCALAR;
+    if(c == '*')
+        return value = readAnchorName(), ALIAS;
+    
+    // node properties
+    if(c == '&')
+        return value = readAnchorName(), ANCHOR;
+    if(c == '!')
+        return value = readTagName(), TAG;
+    
+    // others
+    return value = readPlainScalar(), SCALAR;
 }
 
 Token Lexer::getToken()
@@ -68,38 +108,29 @@ Token Lexer::getToken()
 
 std::string Lexer::getValue()
 {
-	return std::string(1,charBuf);
+	return value;
 }
 
-bool Lexer::skipComments()
+int Lexer::getIndentation()
 {
-	if(charBuf == '/') // c style comments
+    return column;
+}
+
+void Lexer::skipComments(bool multiline)
+{
+    if(multiline) // c style only
     {
-        switch(stream.peek())
+        stream.get();
+        do
         {
-            case '/':
-                stream.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-                charBuf = '\n';
-                token = NEW_LINE;
-                return false;
-            case '*':
-                stream.get();
-                do
-                {
-                    stream.ignore(std::numeric_limits<std::streamsize>::max(),'*');
-                } while(!stream.eof() && stream.peek()!='/');
-                stream.get();
-                return true;
-            default:
-                return false;
-        }
+            stream.ignore(std::numeric_limits<std::streamsize>::max(),'*');
+        } while(!stream.eof() && stream.peek()!='/');
+        stream.get();
+        // TODO : process new lines
     }
-    else if(charBuf == ' ' && stream.peek() == '#') // yaml style comments
+	else
     {
         stream.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-        charBuf = '\n';
-        token = NEW_LINE;
-        return false;
     }
 }
 
@@ -131,62 +162,127 @@ inline std::string utf8Convert(unsigned int hex)
     return result;
 }
 
-// on entre apres : "'
-// on sort avec : "'
-std::string Lexer::readString(char endChar, bool escape)
+// error handling:
+//     - only header and comment on first line
+std::string Lexer::readBlockScalar()
 {
+    // TODO
+    // read header
+    // possible comment + new line
+    // possible error handling: allow content on first line
+    // read content text
+    return std::string();
+}
+
+// on entre apres : endChar
+// on sort avec : endChar
+std::string Lexer::readQuotedString(char endChar, bool escape)
+{
+    std::string hex; // special (utf8 & hexa)
     std::string result;
-    for(char c = stream.get(); c!=endChar && !stream.eof(); c = stream.get())
+    for(char c = stream.get(); c!=endChar && !stream.eof();)
     {
         if(escape && c=='\\')
         {
-            std::string hex; // nombres
-            int nbChar = 0;
+            unsigned int utfNum = 0; // unicodes points
+            int nbChar = 2;
 
             c = stream.get();
             switch(c)
             {
             // C escape sequences
-                case '0':   c = '\0'; break;
-                case 'a':   c = '\a'; break;
-                case 'b':   c = '\b'; break;
-                case 'f':   c = '\f'; break;
-                case 'n':   c = '\n'; break;
-                case 'r':   c = '\r'; break;
-                case 't':   c = '\t'; break;
-                case 'v':   c = '\v'; break;
-                case 'U':   nbChar = 8; // \Unnnnnnnn (UTF-32)
-                case 'u':   nbChar = 4; // \unnnn     (UTF-16)
+                case '0':   c = 0x00; break; // NUL: '\0'
+                case 'a':   c = 0x07; break; // BEL: '\a'
+                case 'b':   c = 0x08; break; // BS : '\b'
+                case 't':   c = 0x09; break; // TAB: '\t'
+                case 'n':   c = 0x0a; break; // LF : '\n'
+                case 'v':   c = 0x0b; break; // VT : '\v'
+                case 'f':   c = 0x0c; break; // FF : '\f'
+                case 'r':   c = 0x0d; break; // CR : '\r'
+                case 'e':   c = 0x1b; break; // ESC: '\e' may be not recognized
+                case 'U':   nbChar *= 2; // \Unnnnnnnn (UTF-32)
+                case 'u':   nbChar *= 2; // \unnnn     (UTF-16)
             // YAML escape sequences
-                case 'x':   nbChar = 2; // \xnn       (UTF-8)
-                    for(int i=0; i<nbChar; i++)
-                    {
-                        c = stream.get();
-                        if(!stream.eof() && isxdigit(c))
-                            hex.push_back(c);
-                        else
-                        {
-                            result.append(hex);
-                            break;
+                case 'x':                // \xnn       (UTF-8)
+                    for(int i=0; i<nbChar; i++) {
+                        if(!stream.eof() && isxdigit(stream.peek())) {
+                            c = stream.get();
+                            c -= (c<'A')? '0' : (c<'a')? '1' : 'Q';
+                            utfNum = (utfNum << 4) | c;
                         }
+                        else break;
                     }
                     goto l_convert;
-				case 'N':   hex = "0085"; goto l_convert;
-				case '_':   hex = "00a0"; goto l_convert;
-				case 'L':   hex = "2028"; goto l_convert;
-				case 'P':   hex = "2029"; goto l_convert;
+				case 'N':   utfNum = 0x0085; goto l_convert;
+				case '_':   utfNum = 0x00a0; goto l_convert;
+				case 'L':   utfNum = 0x2028; goto l_convert;
+				case 'P':   utfNum = 0x2029; goto l_convert;
                 l_convert:
-                    hex = utf8Convert(static_cast<unsigned int>(strtoul(hex.c_str(),0,16)));
+                    hex = utf8Convert(utfNum);
                     break;
-                case 'e':   c = 0x1b; break;
+            // line folding
+                case '\r':
+                    c = '\n';
+                    if(stream.peek()=='\n')
+                        stream.get();
+                case '\n':
+                    // TODO: consume indentation
                 default:
-                    // TODO octal
                     break;
             }
         }
-        if(!stream.eof())
+
+        // line folding & indentation
+        if(c == '\r') {
+            c = '\n';
+            if(stream.peek() == '\n')
+                stream.get();
+        }
+        if(c == '\n')
+            ; // TODO
+
+        // append the char
+        if(hex.size()) {
+            result.append(hex);
+            hex.clear();
+        }
+        else if(!stream.eof())
             result.push_back(c);
+        
+        c = stream.get();
+        // single quoted escape
+        if(c==endChar && !escape && stream.peek()==endChar)
+        {
+            result.push_back(c);
+            stream.get();
+            c = ' ';
+        }
     }
     return result;
 }
+
+std::string Lexer::readAnchorName()
+{
+    // TODO
+    // break with space, '\n', ',', '[', ']', '{', '}'
+    return std::string();
+}
+
+// error handling:
+//     - no comments on multilines
+//     - one key on a line (no compact notation)
+//     - allways expect a single key or terminate by end of line
+std::string Lexer::readPlainScalar()
+{
+    // TODO
+    // break with ": ", " #" or unindent
+    return std::string();
+}
+
+std::string Lexer::readTagName()
+{
+    // TODO
+    return std::string();
+}
+
 

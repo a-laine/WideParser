@@ -207,7 +207,7 @@ std::string Lexer::readQuotedString(char endChar, bool escape)
                     for(int i=0; i<nbChar; i++) {
                         if(!stream.eof() && isxdigit(stream.peek())) {
                             c = stream.get();
-                            c -= (c<'A')? '0' : (c<'a')? '1' : 'Q';
+                            c -= (c<='9')? '0' : (c<='Z')? ('A'-10) : ('a'-10);
                             utfNum = (utfNum << 4) | c;
                         }
                         else break;

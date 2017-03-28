@@ -6,8 +6,6 @@
 
 
 enum Token {
-	NEW_LINE,
-	ERROR,
 	END_STREAM,
 	BLOCK_MAP_ENTRY,
 	BLOCK_SEQ_ENTRY,
@@ -23,29 +21,51 @@ enum Token {
 	TAG
 };
 
+enum Encoding {
+	UTF8,
+	UTF16_LE,
+	UTF16_BE,
+	UTF32_LE,
+	UTF32_BE
+};
+
 class Lexer
 {
 	public:
+		struct TokenInfo
+		{
+			size_t indent;
+			Token token;
+		};
+
+	public:
 		Lexer(std::istream& input);
 
-		Token next();
-		Token getToken();
+		Encoding readEncoding();
+		TokenInfo next(size_t indentation);
 		std::string getValue();
-		int getIndentation();
+
+	private:
+		char getChar();
+		void ungetChar();
+		char peekChar();
+		bool eof();
+
+		void skipComments(bool multiline = false);
+		void readBlockScalar(bool folded);
+		void readQuotedString(char endChar, bool escape);
+		void readAnchorName();
+		void readPlainScalar(bool inFlow);
+		void readTagName();
+
+		void parseEscape(std::string& result);
 
 	private:
 		std::istream& stream;
 		std::string value;
-		int column;
+		size_t column;
+		size_t prevIndent;
 		char charBuf;
-
-		char getChar();
-		char skipComments(bool multiline = false);
-		std::string readBlockScalar();
-		std::string readQuotedString(char endChar, bool escape);
-		std::string readAnchorName();
-		std::string readPlainScalar();
-		std::string readTagName();
 };
 
 

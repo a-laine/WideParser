@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     return 0;
 }*/
 
-
+/*
 // test Writer
 int main(int argc, char** argv)
 {
@@ -102,5 +102,98 @@ int main(int argc, char** argv)
     std::cout << "---------------------" << std::endl;
     return 0;
 }
+*/
 
+
+
+#include <iostream>
+#include <fstream>
+#include <stack>
+#include "Lexer.hpp"
+
+
+// test Lexer
+int main(int argc, char const *argv[])
+{
+	for(int i = 1; i < argc; i++)
+	{
+		std::ifstream ifs(argv[i]);
+		if(!ifs)
+			continue;
+
+		Lexer lex(ifs);
+		bool loop = true;
+		size_t indent = 0;
+		std::stack<int> indentStack;
+		indentStack.push(0);
+		Lexer::TokenInfo t = Lexer::TokenInfo({ 0, END_STREAM });
+		Lexer::TokenInfo prevT;
+		while(loop)
+		{
+			prevT = t;
+            t = lex.next(indent);
+			switch(t.token)
+			{
+				case END_STREAM:
+					loop = false;
+					break;
+				case BLOCK_MAP_ENTRY:
+					std::cout << "BLOCK_MAP_ENTRY : " << t.indent << std::endl;
+					indentStack.push(t.indent + 1);
+					break;
+				case BLOCK_SEQ_ENTRY:
+					std::cout << "BLOCK_SEQ_ENTRY : " << t.indent << std::endl;
+					indentStack.push(t.indent + 1);
+					break;
+				case MAP_KEY_DELIMITER:
+					std::cout << "MAP_KEY_DELIMITER : " << t.indent << std::endl;
+					indentStack.push(prevT.indent + 1);
+					break;
+				case FLOW_MAP_BEGIN:
+					std::cout << "FLOW_MAP_BEGIN : " << t.indent << std::endl;
+					indentStack.push(t.indent + 1);
+					break;
+				case FLOW_MAP_END:
+					std::cout << "FLOW_MAP_END : " << t.indent << std::endl;
+					indentStack.pop();
+					break;
+				case FLOW_SEQ_BEGIN:
+					std::cout << "FLOW_SEQ_BEGIN : " << t.indent << std::endl;
+					indentStack.push(t.indent + 1);
+					break;
+				case FLOW_SEQ_END:
+					std::cout << "FLOW_SEQ_END : " << t.indent << std::endl;
+					indentStack.pop();
+					break;
+				case FLOW_DELIMITER:
+					std::cout << "FLOW_DELIMITER : " << t.indent << std::endl;
+					break;
+				case SCALAR:
+					std::cout << "SCALAR : " << t.indent << std::endl;
+					std::cout << "    " << indentStack.top() << " - " << lex.getValue() << std::endl;
+					if(prevT.token != SCALAR && prevT.token != ALIAS && prevT.token != END_STREAM)
+					{
+						indentStack.pop();
+					}
+					break;
+				case ALIAS:
+					std::cout << "ALIAS : " << t.indent << std::endl;
+					std::cout << "    " << indentStack.top() << " - " << lex.getValue() << std::endl;
+					break;
+				case ANCHOR:
+					std::cout << "ANCHOR : " << t.indent << std::endl;
+					std::cout << "    " << indentStack.top() << " - " << lex.getValue() << std::endl;
+					break;
+				case TAG:
+					std::cout << "TAG" << t.indent << std::endl;
+					std::cout << "    " << indentStack.top() << " - " << lex.getValue() << std::endl;
+					break;
+				default:
+					std::cout << "error" << std::endl;
+					break;
+			}
+		}
+	}
+	return 0;
+}
 

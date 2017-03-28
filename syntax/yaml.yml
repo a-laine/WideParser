@@ -1,6 +1,6 @@
 predefined char:
   c_uri: ns-uri-char
-  c_tag: ns-tag-char # ns-uri-char - "!,[]{}"
+  c_tag: ns-tag-char # ns-uri-char - "!,[]"
   c_anchor: ns-anchor-char # all - ws - ",[]{}"
 
 tokens:
@@ -15,11 +15,13 @@ tokens:
   t_flow_delimiter: ","
   t_block_scalar_litteral: "|"
   t_block_scalar_folded: ">"
+  t_block_scalar_number: "[0-9]"
+  t_block_scalar_chomping: "[+]|[-]"
   t_double_quote: "\""
   t_single_quote: "'"
   t_anchor: "&{c_anchor}*"
   t_alias: "*{c_anchor}*"
-  t_tag: "!<{c_uri}*>" | "!{c_tag}*?" | "!([0-9]|[a-zA-Z]|-)*!{c_tag}*"
+  t_tag: "!<{c_uri}*>" | "!{c_tag}*" | "!([0-9]|[a-zA-Z]|[-])*!{c_tag}*"
   t_new_line: "\r|\n|\r\n|{EOF}"  # LR CR EOF
   t_empty_value: ""
   --ignored--: " |\t" # except for indentation or scalar content
@@ -52,8 +54,8 @@ generic syntax:
   BLOCK_SEQ_ENTRY: t_seq_element_indicator t_indent NODE t_unindent
   BLOCK_SCALAR: t_block_scalar_litteral BLOCK_SCALAR_HEADERS? t_new_line BLOCK_SCALAR_LITTERAL t_block_scalar_chomping
   BLOCK_SCALAR: t_block_scalar_folded BLOCK_SCALAR_HEADERS? t_new_line BLOCK_SCALAR_FOLDED t_block_scalar_chomping
-  BLOCK_SCALAR_LITTERAL: t_litteral_empty_lines? t_content_text BLOCK_SCALAR_LITTERAL?
-  BLOCK_SCALAR_FOLDED: t_folded_empty_lines? t_content_text BLOCK_SCALAR_FOLDED?
+  BLOCK_SCALAR_LITTERAL: t_litteral_new_lines? t_content_text BLOCK_SCALAR_LITTERAL?
+  BLOCK_SCALAR_FOLDED: t_folded_new_lines? t_content_text BLOCK_SCALAR_FOLDED?
   FLOW_SCALAR_EMPTY: t_empty_value | FLOW_SCALAR
   FLOW_SCALAR: t_alias | (t_double_quote DQ_SCALAR t_double_quote) | (t_single_quote SQ_SCALAR t_single_quote) | PLAIN_SCALAR
   DQ_SCALAR: t_dq_content t_flow_folded_lines? DQ_SCALAR?
@@ -79,14 +81,29 @@ not defined:
 other syntax:
   INDENT: "( |\t)*" # t_indent t_unindent
   NODE_PROPERTIES: (t_anchor t_tag?) | (t_tag t_anchor?) #TODO
-  BLOCK_SCALAR_HEADERS: ...
+  BLOCK_SCALAR_HEADERS: ( (t_block_scalar_number t_block_scalar_chomping?) | (t_block_scalar_chomping t_block_scalar_number?) )?
   DIRECTIVES: ...
 
 
+scalar content:
+  BLOCK_SCALAR_LITTERAL:
+    - t_new_line is normalized into "\n"
+    - empty lines are normalized into "\n"
+  BLOCK_SCALAR_FOLDED:
+    - between 2 normal lines :
+      - t_new_line is folded into " " if followed by a normal line
+      - t_new_line is discared if followed by an empty line
+      - empty lines are nomalized into "\n" 
+    - between 2 others:
+      - t_new_line is normalized into "\n"
+      - empty lines are normalized into "\n"
+  FLOW_SCALAR:
+    - t_new_line is folded into " " if followed by a normal line
+    - t_new_line is discared if followed by an empty line
+    - empty lines are nomalized into "\n"
+    - chomping is strip
+  CHOMPING:
+    strip: final t_new_line and following is discared
+    clip: final t_new_line is preserved but following is discared
+    keep: final t_new_line and following empty lines are normalized into "\n"
 
-group:
-  - Base Blocks
-  - New line (t_new_line) # treat empty lines
-  - Block Scalars
-  - Plain Scalars
-  - Quoted Scalars

@@ -1,0 +1,6 @@
+a: xoxo
+b: "xoxo"
+c: 'xoxo'
+d: - truc
+   - much
+e: {x: y}

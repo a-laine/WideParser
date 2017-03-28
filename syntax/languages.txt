@@ -1,0 +1,33 @@
+Main goal:
+==========
+
+YAML
+JSON
+CSV
+
+
+Human readable:
+===============
+
+Candle Markup
+edn
+HOCON
+Bencode
+
+
+Binary:
+=======
+
+BSON
+MessagePack
+Binn
+
+
+
+
+
+
+
+
+
+Next: OpenDDL

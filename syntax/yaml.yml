@@ -54,12 +54,12 @@ generic syntax:
   BLOCK_SEQ_ENTRY: t_seq_element_indicator t_indent NODE t_unindent
   BLOCK_SCALAR: t_block_scalar_litteral BLOCK_SCALAR_HEADERS? t_new_line BLOCK_SCALAR_LITTERAL t_block_scalar_chomping
   BLOCK_SCALAR: t_block_scalar_folded BLOCK_SCALAR_HEADERS? t_new_line BLOCK_SCALAR_FOLDED t_block_scalar_chomping
-  BLOCK_SCALAR_LITTERAL: t_litteral_new_lines? t_content_text BLOCK_SCALAR_LITTERAL?
-  BLOCK_SCALAR_FOLDED: t_folded_new_lines? t_content_text BLOCK_SCALAR_FOLDED?
+  BLOCK_SCALAR_LITTERAL: t_block_litteral_folded_lines? t_content_text BLOCK_SCALAR_LITTERAL?
+  BLOCK_SCALAR_FOLDED: t_block_folded_folded_lines? t_content_text BLOCK_SCALAR_FOLDED?
   FLOW_SCALAR_EMPTY: t_empty_value | FLOW_SCALAR
-  FLOW_SCALAR: t_alias | (t_double_quote DQ_SCALAR t_double_quote) | (t_single_quote SQ_SCALAR t_single_quote) | PLAIN_SCALAR
-  DQ_SCALAR: t_dq_content t_flow_folded_lines? DQ_SCALAR?
-  SQ_SCALAR: t_sq_content t_flow_folded_lines? SQ_SCALAR?
+  FLOW_SCALAR: t_alias | PLAIN_SCALAR
+  FLOW_SCALAR: t_double_quote QUOTED_SCALAR(t_double_quote) t_double_quote | t_single_quote QUOTED_SCALAR(t_single_quote) t_single_quote
+  QUOTED_SCALAR(quote): t_quoted_content(quote) t_flow_folded_lines? DQ_SCALAR?
   PLAIN_SCALAR: t_plain_content t_flow_folded_lines? PLAIN_SCALAR?
   FLOW_MAP: t_flow_map_begin FLOW_LINE_BREAK? FLOW_MAP_CONTENT? t_flow_map_end
   FLOW_MAP_CONTENT: FLOW_MAP_PAIR FLOW_LINE_BREAK? ( t_flow_delimiter FLOW_LINE_BREAK? FLOW_MAP_CONTENT? )?
@@ -72,9 +72,9 @@ generic syntax:
 
 not defined:
   - t_indent, t_unindent
-  - t_block_scalar_chomping, t_litteral_empty_lines, t_content_text
-  - t_dq_content, t_sq_content, t_flow_folded_lines
-  - t_plain_content
+  - t_block_litteral_folded_lines, t_block_folded_folded_lines
+  - t_block_scalar_chomping, t_content_text
+  - t_quoted_content, t_plain_content, t_flow_folded_lines
 
 
 

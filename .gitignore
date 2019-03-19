@@ -1,23 +1,50 @@
-bin
-Debug
-Release
-obj
-*.log
-YAML_site*
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Makefiles
+Makefile
+makefile
 
 # CMake
-# =========================
-
+CMakeLists.txt
 CMakeCache.txt
-CMakeFiles
-CMakeScripts
-*.user
-Makefile
-cmake_install.cmake
-install_manifest.txt
+CMakeFiles/*
+*.cmake
 
-# CodeBlocks
-# =========================
+# Visual Studio
+.vs/*
+*.sln
+*.vcxproj
+*.vcxproj.*
+*.vspx
 
-*.depend
-*.layout
+
+#others
+bin/
+tmp/
+obj/
+Debug/
+Release/
+
